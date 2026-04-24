@@ -70,6 +70,12 @@ class AfconMatchController extends Controller
         $season = config('services.football.season');
 
         if (!$request) {
+            $fallbackMatch = $this->findSampleMatch($matchId);
+
+            if ($fallbackMatch) {
+                return response()->json(['data' => $fallbackMatch]);
+            }
+
             return response()->json([
                 'message' => 'FOOTBALL_API_KEY is missing. Configure it in your .env file.',
             ], 500);
@@ -82,13 +88,24 @@ class AfconMatchController extends Controller
                 'id' => $matchId,
             ]);
         } catch (\Throwable $exception) {
+            $fallbackMatch = $this->findSampleMatch($matchId);
+
+            if ($fallbackMatch) {
+                return response()->json(['data' => $fallbackMatch]);
+            }
+
             return response()->json([
                 'message' => 'Unable to fetch match details from football provider.',
-                'error' => $exception->getMessage(),
             ], 503);
         }
 
         if ($fixtureResponse->failed() || empty($fixtureResponse->json('response'))) {
+            $fallbackMatch = $this->findSampleMatch($matchId);
+
+            if ($fallbackMatch) {
+                return response()->json(['data' => $fallbackMatch]);
+            }
+
             return response()->json(['message' => 'Match not found.'], 404);
         }
 
@@ -131,6 +148,127 @@ class AfconMatchController extends Controller
             'scorers' => [],
             'cards' => [],
         ]);
+    }
+
+    private function sampleMatches(): array
+    {
+        return [
+            [
+                'id' => 1,
+                'stage' => 'Quarter-final',
+                'date' => '2026-02-06',
+                'time' => '17:00',
+                'stadium' => 'Stade Moulay Abdellah, Rabat',
+                'homeTeam' => 'Morocco',
+                'awayTeam' => 'Nigeria',
+                'homeScore' => 2,
+                'awayScore' => 1,
+                'manOfTheMatch' => 'Achraf Hakimi',
+                'statistics' => [
+                    ['label' => 'Possession', 'home' => '56%', 'away' => '44%'],
+                    ['label' => 'Shots', 'home' => 13, 'away' => 9],
+                    ['label' => 'Shots on target', 'home' => 6, 'away' => 4],
+                    ['label' => 'Corners', 'home' => 7, 'away' => 3],
+                ],
+                'scorers' => [
+                    ['team' => 'Morocco', 'player' => 'Youssef En-Nesyri', 'minute' => "18'"],
+                    ['team' => 'Nigeria', 'player' => 'Victor Osimhen', 'minute' => "39'"],
+                    ['team' => 'Morocco', 'player' => 'Achraf Hakimi', 'minute' => "74'"],
+                ],
+                'cards' => [
+                    ['team' => 'Morocco', 'player' => 'Sofyan Amrabat', 'type' => 'Yellow', 'minute' => "45+1'"],
+                    ['team' => 'Nigeria', 'player' => 'Wilfred Ndidi', 'type' => 'Yellow', 'minute' => "63'"],
+                ],
+            ],
+            [
+                'id' => 2,
+                'stage' => 'Quarter-final',
+                'date' => '2026-02-06',
+                'time' => '20:00',
+                'stadium' => 'Grand Stade de Marrakech, Marrakech',
+                'homeTeam' => 'Senegal',
+                'awayTeam' => 'Algeria',
+                'homeScore' => 1,
+                'awayScore' => 1,
+                'manOfTheMatch' => null,
+                'statistics' => [
+                    ['label' => 'Possession', 'home' => '48%', 'away' => '52%'],
+                    ['label' => 'Shots', 'home' => 11, 'away' => 12],
+                    ['label' => 'Shots on target', 'home' => 5, 'away' => 3],
+                    ['label' => 'Corners', 'home' => 4, 'away' => 6],
+                ],
+                'scorers' => [
+                    ['team' => 'Senegal', 'player' => 'Sadio Mane', 'minute' => "57'"],
+                    ['team' => 'Algeria', 'player' => 'Riyad Mahrez', 'minute' => "81'"],
+                ],
+                'cards' => [
+                    ['team' => 'Senegal', 'player' => 'Kalidou Koulibaly', 'type' => 'Yellow', 'minute' => "28'"],
+                    ['team' => 'Algeria', 'player' => 'Ismael Bennacer', 'type' => 'Yellow', 'minute' => "65'"],
+                    ['team' => 'Algeria', 'player' => 'Aissa Mandi', 'type' => 'Red', 'minute' => "90+2'"],
+                ],
+            ],
+            [
+                'id' => 3,
+                'stage' => 'Quarter-final',
+                'date' => '2026-02-07',
+                'time' => '17:00',
+                'stadium' => 'Stade Ibn Batouta, Tangier',
+                'homeTeam' => 'Egypt',
+                'awayTeam' => 'Cameroon',
+                'homeScore' => 0,
+                'awayScore' => 2,
+                'manOfTheMatch' => 'Andre-Frank Zambo Anguissa',
+                'statistics' => [
+                    ['label' => 'Possession', 'home' => '50%', 'away' => '50%'],
+                    ['label' => 'Shots', 'home' => 10, 'away' => 14],
+                    ['label' => 'Shots on target', 'home' => 2, 'away' => 7],
+                    ['label' => 'Corners', 'home' => 5, 'away' => 5],
+                ],
+                'scorers' => [
+                    ['team' => 'Cameroon', 'player' => 'Karl Toko Ekambi', 'minute' => "33'"],
+                    ['team' => 'Cameroon', 'player' => 'Vincent Aboubakar', 'minute' => "68'"],
+                ],
+                'cards' => [
+                    ['team' => 'Egypt', 'player' => 'Hamdi Fathi', 'type' => 'Yellow', 'minute' => "22'"],
+                    ['team' => 'Cameroon', 'player' => 'Nicolas Nkoulou', 'type' => 'Yellow', 'minute' => "49'"],
+                ],
+            ],
+            [
+                'id' => 4,
+                'stage' => 'Quarter-final',
+                'date' => '2026-02-07',
+                'time' => '20:00',
+                'stadium' => 'Stade d\'Agadir, Agadir',
+                'homeTeam' => 'Cote d\'Ivoire',
+                'awayTeam' => 'Tunisia',
+                'homeScore' => 3,
+                'awayScore' => 2,
+                'manOfTheMatch' => 'Sebastien Haller',
+                'statistics' => [
+                    ['label' => 'Possession', 'home' => '53%', 'away' => '47%'],
+                    ['label' => 'Shots', 'home' => 16, 'away' => 11],
+                    ['label' => 'Shots on target', 'home' => 8, 'away' => 4],
+                    ['label' => 'Corners', 'home' => 6, 'away' => 4],
+                ],
+                'scorers' => [
+                    ['team' => 'Cote d\'Ivoire', 'player' => 'Sebastien Haller', 'minute' => "12'"],
+                    ['team' => 'Tunisia', 'player' => 'Youssef Msakni', 'minute' => "31'"],
+                    ['team' => 'Cote d\'Ivoire', 'player' => 'Nicolas Pepe', 'minute' => "54'"],
+                    ['team' => 'Tunisia', 'player' => 'Anis Ben Slimane', 'minute' => "71'"],
+                    ['team' => 'Cote d\'Ivoire', 'player' => 'Franck Kessie', 'minute' => "85'"],
+                ],
+                'cards' => [
+                    ['team' => 'Tunisia', 'player' => 'Ellyes Skhiri', 'type' => 'Yellow', 'minute' => "40'"],
+                    ['team' => 'Cote d\'Ivoire', 'player' => 'Serge Aurier', 'type' => 'Yellow', 'minute' => "77'"],
+                ],
+            ],
+        ];
+    }
+
+    private function findSampleMatch(int $matchId): ?array
+    {
+        return collect($this->sampleMatches())
+            ->first(fn (array $match) => $match['id'] === $matchId);
     }
 
     private function footballRequest()
